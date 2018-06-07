@@ -16,13 +16,13 @@ void setup() {
   pinMode(ledYellow, OUTPUT);
 
   //nitialize tSerialCommandHandler
-  SerialCommandHandler.AddVariable(F("g"), systemActivated);
-  SerialCommandHandler.AddVariable(F("y"), humanPresenceDetected);
+  //  SerialCommandHandler.AddVariable(F("g"), systemActivated);
+  //  SerialCommandHandler.AddVariable(F("y"), humanPresenceDetected);
 }
 
 void loop() {
   // put your main code here, to run repeatedly:
-  //    systemActvated();
+  systemActivated();
 
 }
 
