@@ -1,4 +1,10 @@
-1. Install MegunoLink
+1. To test functions open serial monitor. 
 
-To install a new library into your Arduino IDE you can use the Library Manager (available from IDE version 1.6.2). Open the IDE and click to the "Sketch" menu and then Include Library > Manage Libraries.
-Search for MegunoLink, click install
+2. Send y to simulate humanPresenceDetected event
+
+3. Send g to go back to active state
+
+
+TROUBLESHOOTING
+* Make sure the ground wire is connected properly
+* Make sure the resistors are connected properly
