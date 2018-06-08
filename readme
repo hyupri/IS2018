@@ -1,10 +1,13 @@
-1. To test functions open serial monitor. 
+1. To test functions open serial monitor. Use followig command to simulate different system states:
 
-2. Send y to simulate humanPresenceDetected event
+* y - humanPresenceDetected event
+* g - systemActivated
+* i - intruderPresenceDetected
+* c - correctCodeEntered
+* w - wrongCodeEnteredOnce 
+* 2 - wrongCodeEnteredTwice
 
-3. Send g to go back to active state
 
-
-TROUBLESHOOTING
+2. TROUBLESHOOTING
 * Make sure the ground wire is connected properly
 * Make sure the resistors are connected properly
