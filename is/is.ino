@@ -5,9 +5,14 @@ const int buzzer = 9; //buzzer to arduino pin 9
 
 // ititialize pins for input
 // PIR sensor
-int pirPin = 2;
+const int pirPin = 2;
 int pirState = LOW;
 int pirValue = 0;
+// ultrasonic sensor
+const int trigPin = 23;
+const int echoPin = 22;
+long duration;
+int distance;
 
 // initial system state
 char systemState = 'g';
@@ -21,9 +26,12 @@ void setup() {
   pinMode(ledGreen, OUTPUT);
   pinMode(ledYellow, OUTPUT);
   pinMode(buzzer, OUTPUT);
+  pinMode(trigPin, OUTPUT); // Sets the trigPin as an Output for ultrasonic sensor
 
   // initialize the digital pins for input.
   pinMode(pirPin, INPUT);
+  pinMode(echoPin, INPUT); //Sets the echoPin as an Input for ultrasonic sensor
+
 }
 
 void loop() {
@@ -60,7 +68,7 @@ void loop() {
   } else if (systemState == 'y')
   {
     humanPresenceDetected();
-    pirRead();
+    ultrasonicRead();
   }
   else if (systemState == 'i')
   {
@@ -80,8 +88,8 @@ void loop() {
   }
 
   // handle sensor readings
-  
-  
+
+
 }
 
 // output functions
@@ -201,5 +209,36 @@ void pirRead() {
 
     }
   }
+}
+
+void ultrasonicRead() {
+  
+  // Clears the trigPin
+  digitalWrite(trigPin, LOW);
+  delayMicroseconds(2);
+  // Sets the trigPin on HIGH state for 10 micro seconds
+  digitalWrite(trigPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(trigPin, LOW);
+  // Reads the echoPin, returns the sound wave travel time in microseconds
+  duration = pulseIn(echoPin, HIGH);
+  // Calculating the distance
+  distance = duration * 0.034 / 2;
+  // Prints the distance on the Serial Monitor
+  Serial.print("Distance: ");
+  Serial.println(distance);
+
+  if(distance > 200){
+    // system returns systemActivated state
+    systemState = 'g';
+  }else if(distance > 50){
+    // system goes to humanPresenceDetected state
+    systemState = 'y';
+  }else{
+    // system goes to intruderPresenceDetected state
+    systemState g= 'i';
+  }
+  Serial.print("systemState: ");
+  Serial.println(systemState);
 }
 
