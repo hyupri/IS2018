@@ -1,7 +1,13 @@
-// Pin 12 has the green LED connected
+// initialize pins for output
 const int ledGreen = 12;
 const int ledYellow = 11;
 const int buzzer = 9; //buzzer to arduino pin 9
+
+// ititialize pins for input
+// PIR sensor
+int pirPin = 2;
+int pirState = LOW;
+int pirValue = 0;
 
 // initial system state
 char systemState = 'g';
@@ -15,6 +21,9 @@ void setup() {
   pinMode(ledGreen, OUTPUT);
   pinMode(ledYellow, OUTPUT);
   pinMode(buzzer, OUTPUT);
+
+  // initialize the digital pins for input.
+  pinMode(pirPin, INPUT);
 }
 
 void loop() {
@@ -47,9 +56,11 @@ void loop() {
   if (systemState == 'g')
   {
     systemActivated();
+    pirRead();
   } else if (systemState == 'y')
   {
     humanPresenceDetected();
+    pirRead();
   }
   else if (systemState == 'i')
   {
@@ -67,9 +78,13 @@ void loop() {
   {
     wrongCodeEnteredTwice();
   }
+
+  // handle sensor readings
+  
+  
 }
 
-// TODO sensor readings
+// output functions
 
 void systemActivated() {
 
@@ -159,5 +174,32 @@ void wrongCodeEnteredTwice() {
   delay(timer);
   noTone(buzzer);
   delay(timer);
+}
+
+// TODO sensor readings
+
+void pirRead() {
+  pirValue = digitalRead(pirPin);  // read input value
+  if (pirValue == HIGH) {            // check if the input is HIGH
+
+    if (pirState == LOW) {
+      // we have just turned on
+      Serial.println("Motion detected!\n");
+      // We only want to print on the output change, not state
+      pirState = HIGH;
+      systemState = 'y';
+
+    }
+  } else {
+
+    if (pirState == HIGH) {
+      // we have just turned of
+      Serial.println("Motion ended!\n");
+      // We only want to print on the output change, not state
+      pirState = LOW;
+      systemState = 'g';
+
+    }
+  }
 }
 
