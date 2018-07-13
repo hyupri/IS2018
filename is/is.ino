@@ -1,3 +1,5 @@
+#include <CapacitiveSensor.h>
+
 // initialize pins for output
 const int ledGreen = 12;
 const int ledYellow = 11;
@@ -13,6 +15,13 @@ const int trigPin = 23;
 const int echoPin = 22;
 long duration;
 int distance;
+// keypad
+long total_30_31;
+long total_32_33;
+const CapacitiveSensor   cs_30_31 = CapacitiveSensor(30, 31);
+const CapacitiveSensor   cs_32_33 = CapacitiveSensor(32, 33);
+bool firstKey = false;
+bool firstAttemptFailed = false;
 
 // initial system state
 char systemState = 'g';
@@ -30,7 +39,11 @@ void setup() {
 
   // initialize the digital pins for input.
   pinMode(pirPin, INPUT);
-  pinMode(echoPin, INPUT); //Sets the echoPin as an Input for ultrasonic sensor
+  pinMode(echoPin, INPUT); //Sets the echoPin as an Input for ultrasonic sens
+
+  //initialize the digital pins for keypad
+  cs_30_31.set_CS_AutocaL_Millis(0xFFFFFFFF);
+  cs_32_33.set_CS_AutocaL_Millis(0xFFFFFFFF);
 
 }
 
@@ -38,7 +51,7 @@ void loop() {
   // put your main code here, to run repeatedly:
   if (Serial.available())
   {
-    // to test output you can control the system using commands
+    // to test output you can control the system using commands: check readme
     // if condition helps to prevent reading in the empty command
     char currentInput = Serial.read();
     if (currentInput == 'y') {
@@ -73,6 +86,7 @@ void loop() {
   else if (systemState == 'i')
   {
     intruderPresenceDetected();
+    readCode();
   }
   else if (systemState == 'c')
   {
@@ -81,14 +95,12 @@ void loop() {
   else if (systemState == 'w')
   {
     wrongCodeEnteredOnce();
+    readCode();
   }
   else if (systemState == '2')
   {
     wrongCodeEnteredTwice();
   }
-
-  // handle sensor readings
-
 
 }
 
@@ -125,7 +137,7 @@ void humanPresenceDetected() {
 
 void intruderPresenceDetected() {
 
-  int timer = 1000;
+  int timer = 500;
 
   Serial.print("intruder presence detected\n");
 
@@ -173,7 +185,7 @@ void wrongCodeEnteredOnce() {
 
 void wrongCodeEnteredTwice() {
 
-  int timer = 500;
+  int timer = 2000;
 
   Serial.print("wrong code entered twice\n");
 
@@ -212,7 +224,7 @@ void pirRead() {
 }
 
 void ultrasonicRead() {
-  
+
   // Clears the trigPin
   digitalWrite(trigPin, LOW);
   delayMicroseconds(2);
@@ -228,17 +240,66 @@ void ultrasonicRead() {
   Serial.print("Distance: ");
   Serial.println(distance);
 
-  if(distance > 200){
+  if (distance > 200) {
     // system returns systemActivated state
     systemState = 'g';
-  }else if(distance > 50){
+  } else if (distance > 50) {
     // system goes to humanPresenceDetected state
     systemState = 'y';
-  }else{
+  } else {
     // system goes to intruderPresenceDetected state
-    systemState g= 'i';
+    systemState = 'i';
   }
   Serial.print("systemState: ");
   Serial.println(systemState);
+}
+
+void readCode() {
+
+  // read sensor values for all active buttons
+  total_30_31 =  cs_30_31.capacitiveSensor(30);
+  total_32_33 =  cs_32_33.capacitiveSensor(30);
+
+  // await first button
+  if (!firstKey) {
+    // [wrong] the second button was pressed, it is the first attempt
+    if (total_32_33 > 1000 && !firstAttemptFailed) {
+      Serial.println("second button pressed(1)");
+      firstAttemptFailed = true;
+      systemState = 'w';
+    }else
+    // [wrong] the second button was pressed, it is the second attempt
+    if (total_32_33 > 1000 && firstAttemptFailed) {
+      Serial.println("second button pressed(2)");
+      firstAttemptFailed = false;
+      systemState = '2';
+    }else
+    // the first button was pressed
+    if (total_30_31 > 1000) {
+      firstKey = true;
+      Serial.println("first button pressed(c)");
+    }
+    // await second button
+  } else {
+    // [wrong] the first button was pressed, it is the first attempt
+    if (total_30_31 > 1000 && !firstAttemptFailed) {
+      Serial.println("first button pressed(1)");
+      firstAttemptFailed = true;
+      systemState = 'w';
+    }else
+    // [wrong] the first button was pressed, it is the second attempt
+    if (total_30_31 > 1000 && firstAttemptFailed) {
+      Serial.println("first button pressed(2)");
+      systemState = '2';
+      firstAttemptFailed = false;
+    }else
+    // the second button was pressed
+    if (total_32_33 > 1000) {
+      Serial.println("second button pressed(c)");
+      systemState = 'c';
+      firstKey = false;
+      firstAttemptFailed = false;
+    }
+  }
 }
 
